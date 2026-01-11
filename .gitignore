@@ -1,0 +1,70 @@
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python tools
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.coverage
+htmlcov/
+.tox/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# ======================
+# PyCharm / IntelliJ
+# ======================
+.idea/
+*.iml
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# ML / Data files
+# ======================
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.onnx
+
+# Large datasets (optional)
+data/
+datasets/
+
+# ======================
+# Environment variables
+# ======================
+.env
+.env.*
+
+# ======================
+# Misc
+# ======================
+.cache/
