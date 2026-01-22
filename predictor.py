@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
 import os
-
+import tkinter.messagebox as tkmb
 
 def predict_reaction(model_path, input_data):
     """
@@ -25,6 +25,11 @@ def predict_reaction(model_path, input_data):
     """
 
     if not os.path.exists(model_path):
+        tkmb.showerror(
+            "Model Not Found",
+            "The required machine learning model could not be found.\n"
+            "Please make sure the model file is available and try again."
+        )
         raise FileNotFoundError(
             f"Model not found at {model_path}. Train the model first."
         )

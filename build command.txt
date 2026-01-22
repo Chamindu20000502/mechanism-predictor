@@ -1,0 +1,1 @@
+pyinstaller --onefile --windowed --add-data "models/chemistry_model_v1.pkl;models" --hidden-import=predictor --hidden-import=sklearn.ensemble --hidden-import=sklearn.tree --hidden-import=sklearn.utils._typedefs --hidden-import=sklearn.neighbors._typedefs app.py

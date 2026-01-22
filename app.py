@@ -12,7 +12,6 @@
 
 
 
-
 import customtkinter as ctk
 import tkinter.messagebox as tkmb
 from predictor import predict_reaction
@@ -39,14 +38,9 @@ def predict(data):
     except Exception as e:
         return e
 
-prediction_stats = {
-    "SN1":0,
-    "SN2":0,
-    "E1":0,
-    "E2":0
-}
 
 class ReactionPredictorApp(ctk.CTk):
+
     def __init__(self):
         super().__init__()
 
@@ -132,29 +126,32 @@ class ReactionPredictorApp(ctk.CTk):
         self.stats_frame = ctk.CTkFrame(self.result_frame, fg_color="transparent")
         self.stats_frame.pack(fill="x", padx=40, pady=40)
 
-        self.create_stat_bar("SN2 Probability", 0.0)
-        self.create_stat_bar("SN1 Probability", 0.0)
-        self.create_stat_bar("E2 Probability", 0.0)
-        self.create_stat_bar("E1 Probability", 0.0)
+        self.bars={}
 
-    def create_stat_bar(self, label_text, value):
-        """Helper to create nice progress bars for probabilities"""
+        # The first argument is the dictionary key, the second is the UI label
+        self.create_stat_bar("SN1", "SN1 Probability")
+        self.create_stat_bar("SN2", "SN2 Probability")
+        self.create_stat_bar("E1", "E1 Probability")
+        self.create_stat_bar("E2", "E2 Probability")
+
+    def create_stat_bar(self, key, label_text, value=0):
+        """Helper to create progress bars and store them in self.bars"""
         container = ctk.CTkFrame(self.stats_frame, fg_color="transparent")
         container.pack(fill="x", pady=5)
 
         label = ctk.CTkLabel(container, text=label_text, width=100, anchor="w")
         label.pack(side="left")
 
-        # Determine color based on label for visual distinction
-        color = "#1f6aa5"  # default blue
-        if "E" in label_text: color = "#a51f1f"  # red for elimination
+        # Color logic
+        color = "#1f6aa5"
+        if "E" in key: color = "#a51f1f"
 
         progress = ctk.CTkProgressBar(container, progress_color=color)
-        progress.set(value)  # 0 to 1
+        progress.set(float(value))  # Ensure it's a float
         progress.pack(side="left", fill="x", expand=True, padx=10)
 
-        # Store reference to update later if needed
-        # (For a real app, you'd want to store these in a dictionary)
+        # STORE THE REFERENCE: This is the critical "dictionary-ready" step
+        self.bars[key] = progress
 
     def get_inputs(self):
         """Validation and retrieval of inputs"""
@@ -181,8 +178,11 @@ class ReactionPredictorApp(ctk.CTk):
             return
 
         result = predict(inputs)
-        print(result)
 
+        for key, value in result["probabilities"].items():
+            if key in self.bars:
+                # Convert numpy float to standard float and update
+                self.bars[key].set(float(value))
 
         # Update UI
         self.lbl_prediction.configure(text=result["prediction"])
