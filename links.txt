@@ -1,0 +1,2 @@
+pka - https://organicchemistrydata.org/hansreich/resources/pka/pka_data/evans_pKa_table.pdf
+dielectric - https://depts.washington.edu/eooptic/linkfiles/dielectric_chart%5B1%5D.pdf

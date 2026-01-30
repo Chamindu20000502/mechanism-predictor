@@ -2,69 +2,45 @@ import pandas as pd
 import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
-import os
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import LabelEncoder
 
+# File paths
+DATA_FILE = 'data/organic_reaction_dataset.csv'
+MODEL_PATH = 'models/chemistry_model_v2.pkl'
+ENCODERS_PATH = 'models/label_encoders.pkl'
 
-def train_mechanism_model(
-        data_path,
-        model_save_path,
-        test_size=0.2,
-        n_estimators=100
-):
-    """
-    Trains a Random Forest classifier to predict chemical reaction mechanisms.
+# Load data
+df = pd.read_csv(DATA_FILE)
+print(f"Loaded {len(df)} samples")
 
-    Args:
-        data_path (str): Path to the CSV file containing training data.
-        model_save_path (str): Path where the .pkl model file will be saved.
-        test_size (float): Proportion of dataset to include in the test split.
-        n_estimators (int): Number of trees in the forest.
+# Encode categorical features
+encoders = {}
+for col in ['Substrate_Degree', 'Leaving_Group', 'Nucleophile', 'Solvent_Type', 'Steric_Hindrance']:
+    encoders[col] = LabelEncoder()
+    df[col] = encoders[col].fit_transform(df[col])
 
-    Returns:
-        dict: A dictionary containing accuracy and the classification report.
-    """
+# Encode target
+encoders['Target_Mechanism'] = LabelEncoder()
+y = encoders['Target_Mechanism'].fit_transform(df['Target_Mechanism'])
 
-    # 1. Load Data
-    if not os.path.exists(data_path):
-        raise FileNotFoundError(f"The file {data_path} was not found.")
+# Prepare features
+X = df[['Substrate_Degree', 'Leaving_Group', 'Nucleophile', 'Solvent_Type', 'Steric_Hindrance', 'Temperature']]
 
-    df = pd.read_csv(data_path)
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Basic validation
-    required_cols = {'Substrate_Deg', 'Base_pKa', 'Solvent_Epsilon', 'Temp_C', 'Is_Bulky', 'Mechanism'}
-    if not required_cols.issubset(df.columns):
-        raise ValueError(f"CSV is missing required columns: {required_cols - set(df.columns)}")
+# Train model
+print("Training model...")
+model = RandomForestClassifier(n_estimators=200, max_depth=8, random_state=42)
+model.fit(X_train, y_train)
 
-    # 2. Preprocessing
-    X = df.drop('Mechanism', axis=1)
-    y = df['Mechanism']
+# Evaluate
+accuracy = accuracy_score(y_test, model.predict(X_test))
+print(f"Accuracy: {accuracy:.4f}")
 
-    # 3. Split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=42, stratify=y
-    )
-
-    # 4. Train
-    print(f"Training RandomForest with {n_estimators} trees...")
-    rf = RandomForestClassifier(n_estimators=n_estimators, max_depth=8, random_state=42)
-    rf.fit(X_train, y_train)
-
-    # 5. Evaluate
-    predictions = rf.predict(X_test)
-    acc = accuracy_score(y_test, predictions)
-    report = classification_report(y_test, predictions, output_dict=True)
-
-    print(f"Training Complete. Accuracy: {acc:.2f}")
-
-    # 6. Save Model
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
-    joblib.dump(rf, model_save_path)
-    print(f"Model saved to: {model_save_path}")
-
-    return {
-        "accuracy": acc,
-        "report": report,
-        "model_path": model_save_path
-    }
+# Save model and encoders
+joblib.dump(model, MODEL_PATH)
+joblib.dump(encoders, ENCODERS_PATH)
+print(f"Model saved to {MODEL_PATH}")
+print(f"Encoders saved to {ENCODERS_PATH}")
